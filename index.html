@@ -2057,20 +2057,33 @@ function gerGerar(){
 }
 
 // MATERIAL DE ESTUDO
-function matInit(){
+async function matInit(){
   const el=document.getElementById('mat-content');if(!el)return;
   if(!discs.length){el.innerHTML='<div class="blocker"><strong>Nenhuma disciplina</strong>Adicione disciplinas primeiro.</div>';return}
   const sorted=[...discs].sort((a,b)=>a.name.localeCompare(b.name,'pt'));
-  const saved=JSON.parse(localStorage.getItem('material_estudo')||'{}');
+  const uid=sess.user.id;
+  let saved={};
+  try{
+    const rows=await sbGet('material','user_id=eq.'+uid);
+    rows.forEach(r=>{saved[r.disc_id]=r.conteudo||'';});
+  }catch(e){console.error('Erro ao carregar material:',e)}
   el.innerHTML='<div class="table-wrap"><table>'
     +'<thead><tr><th style="min-width:200px">Disciplina</th><th>Material / Professor</th></tr></thead><tbody>'
     +sorted.map(d=>'<tr><td><div class="cell-static" style="font-weight:600;color:var(--blue)">'+esc(d.name)+'</div></td>'
       +'<td><input class="cell-in" value="'+esc(saved[d.id]||'')+'" placeholder="Ex: Estratégia Concursos — Prof. João Silva" onchange="matSave('+d.id+',this.value)" onkeydown="if(event.key===\'Enter\')this.blur()"/></td></tr>').join('')
     +'</tbody></table></div>';
 }
-function matSave(discId,value){
-  const saved=JSON.parse(localStorage.getItem('material_estudo')||'{}');
-  saved[discId]=value;localStorage.setItem('material_estudo',JSON.stringify(saved));
+async function matSave(discId,value){
+  const uid=sess.user.id;
+  try{
+    const r=await fetch(SB_URL+'/rest/v1/material?user_id=eq.'+uid+'&disc_id=eq.'+discId,{headers:ah()});
+    const existing=await r.json();
+    if(existing.length){
+      await sbPatch('material',existing[0].id,{conteudo:value});
+    }else{
+      await sbPost('material',{user_id:uid,disc_id:discId,conteudo:value});
+    }
+  }catch(e){console.error('Erro ao salvar material:',e);toast('Erro ao salvar.');}
 }
 
 // RESET
