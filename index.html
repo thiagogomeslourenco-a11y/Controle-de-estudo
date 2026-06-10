@@ -1056,16 +1056,13 @@ function renderDDMenu(){
       +'</button></div></div>';
   }).join('');
 }
-function pickDisc(id){if(!selected.find(s=>s.id===id))selected.push({id,aula:'',pagina:''});renderDDMenu();renderSel();closeDD();}
+function pickDisc(id){if(!selected.find(s=>s.id===id))selected.push({id,pagina:''});renderDDMenu();renderSel();closeDD();}
 function removeSel(id){selected=selected.filter(s=>s.id!==id);renderDDMenu();renderSel()}
-function updateSelAula(id,val){const i=selected.find(s=>s.id===id);if(i)i.aula=val}
-function updateSelPagina(id,val){const i=selected.find(s=>s.id===id);if(i)i.pagina=val}
 function renderSel(){
   document.getElementById('disc-selected').innerHTML=selected.map(item=>{
     const d=discs.find(x=>x.id===item.id);if(!d)return'';
-    return '<div style="display:grid;grid-template-columns:1fr 110px 32px;align-items:center;gap:8px;padding:8px 12px;background:#F8FAFC;border:1px solid #E2E8F0;border-radius:var(--radius);margin-bottom:4px">'
+    return '<div style="display:grid;grid-template-columns:1fr 32px;align-items:center;gap:8px;padding:8px 12px;background:#F8FAFC;border:1px solid #E2E8F0;border-radius:var(--radius);margin-bottom:4px">'
       +'<span style="font-size:13px;font-weight:600;color:var(--blue);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(d.name)+'</span>'
-      +'<input class="sel-item-input" type="text" placeholder="Aula nº..." value="'+esc(item.aula||'')+'" oninput="updateSelAula('+item.id+',this.value)" style="font-family:\'JetBrains Mono\',monospace;width:100%"/>'
       +'<button class="sel-item-rm" onclick="removeSel('+item.id+')" style="justify-self:center">×</button></div>';
   }).join('')
 }
@@ -1150,22 +1147,9 @@ async function iniciarMeta(){
   const all=await sbGet('metas','user_id=eq.'+uid);
   const nextNum=all.length?Math.max(...all.map(m=>m.num))+1:1;
 
-  // Buscar tópicos cadastrados no Conteúdo para cada disc+aula
-  let aulasMap={};
-  const discIds=selected.map(s=>s.id).filter(Boolean);
-  if(discIds.length){
-    try{
-      const r=await fetch(SB_URL+'/rest/v1/conteudo?user_id=eq.'+uid+'&disc_id=in.('+discIds.join(',')+')',{headers:ah()});
-      const aulas=await r.json();
-      aulas.forEach(a=>{aulasMap[a.disc_id+'_'+a.aula_num]=a.topico||''});
-    }catch(e){console.error('Erro ao buscar tópicos:',e)}
-  }
-
   const rows=selected.map(item=>{
     const d=discs.find(x=>x.id===item.id);
-    const aulaNum=parseInt(item.aula)||0;
-    const topico=aulasMap[item.id+'_'+aulaNum]||'';
-    return{discId:item.id,discName:d?d.name:'?',aula:item.aula||'',pagina:item.pagina||'',concluida:false,topico,link:'',rendimento:'',acertos:'',total:''};
+    return{discId:item.id,discName:d?d.name:'?',aula:'',pagina:'',concluida:false,topico:'',link:'',rendimento:'',acertos:'',total:''};
   });
   try{
     const[c]=await sbPost('metas',{num:nextNum,rows,started_at:new Date().toISOString(),user_id:uid});
@@ -1886,7 +1870,7 @@ async function ctrlInit(){
       const feita=!!row.concluida;
       html+='<tr style="'+(feita?'opacity:.55':'')+'">'
         +'<td><div class="cell-static" style="font-weight:600;color:var(--blue)">'+esc(row.discName||(discs.find(d=>d.id===parseInt(row.discId||row.disc_id))?.name)||'—')+'</div></td>'
-        +'<td><div class="cell-static" style="text-align:center;font-family:\'JetBrains Mono\',monospace;font-weight:700;font-size:15px;color:'+(feita?'var(--green)':'var(--text)')+'">'+String(aulaNum).padStart(2,'0')+'</div></td>'
+        +'<td><input class="cell-in" value="'+esc(row.aula||'')+'" placeholder="00" onchange="ctrlUpdAula('+i+',this.value)" onkeydown="if(event.key===\'Enter\')this.blur()" style="text-align:center;font-family:\'JetBrains Mono\',monospace;font-weight:700;font-size:15px"/></td>'
         +'<td><input class="cell-in" value="'+esc(topico||'')+'" placeholder="Tópico..." onchange="ctrlUpdTopico('+i+',this.value)" onkeydown="if(event.key===\'Enter\')this.blur()"/></td>'
         +'<td><input class="cell-in" value="'+esc(row.pagina||'')+'" placeholder="Ex: 45" onchange="ctrlUpdPagina('+i+',this.value)" onkeydown="if(event.key===\'Enter\')this.blur()" style="font-family:\'JetBrains Mono\',monospace"/></td>'
         +'<td style="text-align:center;padding:6px 10px">'
@@ -1900,6 +1884,10 @@ async function ctrlInit(){
     el.innerHTML='<div class="blocker"><strong>Erro ao carregar</strong>Tente novamente.</div>';
     console.error(e);
   }
+}
+async function ctrlUpdAula(idx,val){
+  activeMeta.rows[idx].aula=val;
+  try{await sbPatch('metas',activeMeta.id,{rows:activeMeta.rows})}catch(e){console.error(e)}
 }
 async function ctrlUpdPagina(idx,val){
   activeMeta.rows[idx].pagina=val;
