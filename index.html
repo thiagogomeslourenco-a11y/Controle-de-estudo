@@ -428,6 +428,13 @@ td input.cell-in::placeholder{color:var(--text3)}
             <div class="home-card-title">Registro</div>
             <div class="home-card-sub">Disciplinas em estudo no momento</div>
           </div>
+          <div class="home-card" onclick="goTab('diario')">
+            <div class="home-card-icon" style="background:#FDF4FF">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#A855F7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            </div>
+            <div class="home-card-title">Diário</div>
+            <div class="home-card-sub">Disciplinas estudadas por dia</div>
+          </div>
           <div class="home-card" onclick="goTab('conteudo')">
             <div class="home-card-icon" style="background:#EFF6FF">
               <svg viewBox="0 0 24 24" fill="none" stroke="#3B82F6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V6a2 2 0 012-2h13"/><path d="M4 19a2 2 0 002 2h13V8H6a2 2 0 00-2 2v9z"/><path d="M9 12h6M9 16h4"/></svg>
@@ -441,13 +448,6 @@ td input.cell-in::placeholder{color:var(--text3)}
             </div>
             <div class="home-card-title">Questões</div>
             <div class="home-card-sub">Registre questões e rendimento</div>
-          </div>
-          <div class="home-card" onclick="goTab('diario')">
-            <div class="home-card-icon" style="background:#FDF4FF">
-              <svg viewBox="0 0 24 24" fill="none" stroke="#A855F7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-            </div>
-            <div class="home-card-title">Diário</div>
-            <div class="home-card-sub">Marque disciplinas estudadas por dia</div>
           </div>
           <div class="home-card" onclick="concCheckSenha()">
             <div class="home-card-icon" style="background:#FFF7ED">
@@ -497,21 +497,44 @@ td input.cell-in::placeholder{color:var(--text3)}
 
       <!-- DISCIPLINAS -->
       <div id="tab-disciplines" class="section">
-        <div class="page-title">Disciplinas</div>
-        <div class="page-sub">Gerencie disciplinas e acompanhe seus estudos</div>
-
-        <!-- Seletor de disciplina -->
-        <div class="section-label" style="margin-bottom:8px">Selecionar Disciplina</div>
-        <div class="dd" id="disc-dd" style="position:relative;z-index:10;margin-bottom:12px">
-          <div class="dd-trigger" id="disc-trigger" onclick="toggleDD()">
-            <span>— escolha uma disciplina —</span>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.25rem">
+          <div>
+            <div class="page-title">Disciplinas</div>
+            <div class="page-sub" style="margin-bottom:0">Gerencie disciplinas e acompanhe seus estudos</div>
           </div>
-          <div class="dd-menu" id="disc-menu"></div>
+          <button id="btn-split" onclick="toggleSplitView()" title="Ver lado a lado com Registro"
+            style="display:flex;align-items:center;gap:6px;padding:6px 12px;border:1px solid var(--border);border-radius:var(--radius);background:#fff;cursor:pointer;font-size:12px;font-weight:600;font-family:'Inter',sans-serif;color:var(--text2)"
+            onmouseover="this.style.background='var(--surface2)'" onmouseout="this.style.background='#fff'">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="12" y1="3" x2="12" y2="21"/></svg>
+            Lado a lado
+          </button>
         </div>
 
-        <!-- Tabela de estudos -->
-        <div id="estudo-atual-wrap"></div>
+        <!-- Layout normal ou split -->
+        <div id="disc-layout" style="display:flex;gap:16px;align-items:start;margin-top:1rem">
+
+          <!-- Coluna Disciplinas -->
+          <div id="disc-col" style="flex:1;min-width:0">
+            <div class="section-label" style="margin-bottom:8px">Selecionar Disciplina</div>
+            <div class="dd" id="disc-dd" style="position:relative;z-index:10;margin-bottom:12px">
+              <div class="dd-trigger" id="disc-trigger" onclick="toggleDD()">
+                <span>— escolha uma disciplina —</span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+              </div>
+              <div class="dd-menu" id="disc-menu"></div>
+            </div>
+            <div id="estudo-atual-wrap"></div>
+          </div>
+
+          <!-- Coluna Registro (oculta por padrão) -->
+          <div id="reg-inline-col" style="display:none;flex:1;min-width:0;border-left:1px solid var(--border);padding-left:16px">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+              <div class="section-label" style="margin-bottom:0">Registro</div>
+            </div>
+            <div id="reg-inline-wrap"></div>
+          </div>
+
+        </div>
       </div>
 
       <!-- REGISTRO -->
@@ -1161,19 +1184,17 @@ async function estudoToggleStatus(rowId, discId){
   const eraEstudado=!!status[rowId];
   if(eraEstudado){
     delete status[rowId];
-    // remove do diário
     try{
       const uid=sess.user.id;
-      const r=await fetch(SB_URL+'/rest/v1/diario?user_id=eq.'+uid+'&disc_id=eq.'+discId+'&data=eq.'+hoje,{headers:ah()});
+      const r=await fetch(SB_URL+'/rest/v1/diario?user_id=eq.'+uid+'&disc_id=eq.'+parseInt(discId)+'&data=eq.'+hoje,{headers:ah()});
       const ex=await r.json();
       if(ex.length)await sbDel('diario',ex[0].id);
     }catch(e){console.error(e)}
   }else{
     status[rowId]=true;
-    // salva no diário
     try{
       const uid=sess.user.id;
-      const r=await fetch(SB_URL+'/rest/v1/diario?user_id=eq.'+uid+'&disc_id=eq.'+discId+'&data=eq.'+hoje,{headers:ah()});
+      const r=await fetch(SB_URL+'/rest/v1/diario?user_id=eq.'+uid+'&disc_id=eq.'+parseInt(discId)+'&data=eq.'+hoje,{headers:ah()});
       const ex=await r.json();
       if(!ex.length)await sbPost('diario',{user_id:uid,disc_id:parseInt(discId),data:hoje});
     }catch(e){console.error(e)}
@@ -1184,19 +1205,27 @@ async function estudoToggleStatus(rowId, discId){
 
 function estudoVerificarReset(){
   const hoje=drFmtDate(new Date());
-  // Limpa status de dias anteriores do localStorage
   Object.keys(localStorage).forEach(key=>{
     if(key.startsWith('status_')&&key!=='status_'+hoje){
       localStorage.removeItem(key);
     }
   });
-  // Se não há status salvo para hoje, garante que o Diário de hoje está limpo
   const statusHoje=localStorage.getItem('status_'+hoje);
   if(!statusHoje||statusHoje==='{}'){
-    // Apaga registros de hoje no banco (podem ser resíduos)
     fetch(SB_URL+'/rest/v1/diario?user_id=eq.'+sess.user.id+'&data=eq.'+hoje,{method:'DELETE',headers:ah()})
       .catch(e=>console.error(e));
   }
+}
+
+async function resetEstudoAtual(){
+  // Apaga todas as disciplinas da tabela estudo_atual
+  try{
+    const uid=sess.user.id;
+    await fetch(SB_URL+'/rest/v1/estudo_atual?user_id=eq.'+uid,{method:'DELETE',headers:ah()});
+    estudoAtualLinhas=[];
+    estudoAtualRender();
+    renderDDMenu();
+  }catch(e){console.error(e)}
 }
 
 function agendarResetMeiaNoite(){
@@ -1204,9 +1233,14 @@ function agendarResetMeiaNoite(){
   const meianoite=new Date(agora);
   meianoite.setHours(24,0,0,0);
   const ms=meianoite-agora;
-  setTimeout(()=>{
-    estudoAtualRender(); // re-renderiza com status zerado
-    agendarResetMeiaNoite(); // agenda próximo reset
+  setTimeout(async()=>{
+    // Reseta status do localStorage
+    const ontem=drFmtDate(agora);
+    localStorage.removeItem('status_'+ontem);
+    // Apaga disciplinas da tabela estudo_atual
+    await resetEstudoAtual();
+    // Reagenda para próxima meia-noite
+    agendarResetMeiaNoite();
   },ms);
 }
 
@@ -1227,6 +1261,7 @@ async function estudoAtualInit(){
   }catch(e){estudoAtualLinhas=[];console.error(e)}
   estudoAtualRender();
   renderDDMenu();
+  if(_splitAtivo)regRenderInline();
 }
 
 function estudoAtualRender(){
@@ -1355,14 +1390,61 @@ async function estudoAdicionarDisc(discId){
   closeDD();
   if(estudoAtualLinhas.find(r=>r.disc_id===discId)){toast('Disciplina já adicionada.');return;}
   try{
-    const result=await sbPost('estudo_atual',{user_id:sess.user.id,disc_id:discId,aula:'',topico:'',pagina:''});
-    // recarrega do banco para garantir que pegou o registro com id
     const uid=sess.user.id;
+    // Busca aula e tópico do Registro para pré-preencher
+    const regRow=regLinhas.find(r=>r.disc_id===discId);
+    const aula=regRow?.aula||'';
+    const topico=regRow?.topico||'';
+    await sbPost('estudo_atual',{user_id:uid,disc_id:discId,aula,topico,pagina:''});
     const r=await fetch(SB_URL+'/rest/v1/estudo_atual?user_id=eq.'+uid+'&order=created_at.asc',{headers:ah()});
     estudoAtualLinhas=await r.json();
     estudoAtualRender();
-      renderDDMenu();
+    renderDDMenu();
   }catch(e){toast('Erro ao adicionar: '+e.message);console.error(e);}
+}
+
+// SPLIT VIEW
+let _splitAtivo=false;
+function toggleSplitView(){
+  _splitAtivo=!_splitAtivo;
+  const col=document.getElementById('reg-inline-col');
+  const btn=document.getElementById('btn-split');
+  if(col)col.style.display=_splitAtivo?'block':'none';
+  if(btn){
+    btn.style.background=_splitAtivo?'#EFF6FF':'#fff';
+    btn.style.borderColor=_splitAtivo?'var(--blue)':'var(--border)';
+    btn.style.color=_splitAtivo?'var(--blue)':'var(--text2)';
+  }
+  if(_splitAtivo)regRenderInline();
+}
+
+function regRenderInline(){
+  const wrap=document.getElementById('reg-inline-wrap');
+  if(!wrap)return;
+  if(!regLinhas.length){
+    wrap.innerHTML='<div style="font-size:13px;color:var(--text3)">Nenhuma disciplina no Registro.</div>';
+    return;
+  }
+  const sorted=[...regLinhas].sort((a,b)=>{
+    const na=discs.find(d=>d.id===a.disc_id)?.name||'';
+    const nb=discs.find(d=>d.id===b.disc_id)?.name||'';
+    return na.localeCompare(nb,'pt');
+  });
+  wrap.innerHTML='<div class="table-wrap"><table style="width:100%;table-layout:fixed">'
+    +'<thead><tr>'
+    +'<th style="width:45%">Disciplina</th>'
+    +'<th style="width:15%;text-align:center">Aula</th>'
+    +'<th style="width:40%">Tópico</th>'
+    +'</tr></thead><tbody>'
+    +sorted.map(row=>{
+      const disc=discs.find(d=>d.id===row.disc_id);
+      return '<tr>'
+        +'<td><div class="cell-static" style="font-weight:600;color:var(--blue)">'+esc(disc?disc.name:'—')+'</div></td>'
+        +'<td><div class="cell-static" style="text-align:center;font-family:\'JetBrains Mono\',monospace;font-weight:700">'+esc(row.aula||'—')+'</div></td>'
+        +'<td><div class="cell-static" style="color:var(--text2)">'+esc(row.topico||'—')+'</div></td>'
+        +'</tr>';
+    }).join('')
+    +'</tbody></table></div>';
 }
 
 // REGISTRO
@@ -1819,6 +1901,7 @@ function qtRender(){
     aulaIn.placeholder='00';
     aulaIn.style.cssText='width:100%;font-family:\'JetBrains Mono\',monospace;font-size:14px;font-weight:600;text-align:center';
     aulaIn.onchange=()=>qtUpd(l.id,'aula',aulaIn.value);
+    aulaIn.oninput=()=>qtAulaChange(l.id,aulaIn.value,topIn);
     aulaWrap.appendChild(aulaIn);
 
     // topico input
@@ -1996,6 +2079,24 @@ async function qtAdd(){
     setTimeout(()=>{const ins=document.querySelectorAll('#qt-rows .q-input[placeholder="00"]');if(ins.length)ins[ins.length-1].focus()},80);
   }catch(e){toast('Erro ao adicionar.');console.error(e)}
 }
+let _qtAulaTimer={};
+function qtAulaChange(rowId,val,topIn){
+  clearTimeout(_qtAulaTimer[rowId]);
+  _qtAulaTimer[rowId]=setTimeout(async()=>{
+    const aulaNum=parseInt(val);
+    if(isNaN(aulaNum)||!qtDiscId)return;
+    try{
+      const r=await fetch(SB_URL+'/rest/v1/conteudo?user_id=eq.'+sess.user.id+'&disc_id=eq.'+qtDiscId+'&aula_num=eq.'+aulaNum,{headers:ah()});
+      const aulas=await r.json();
+      if(aulas.length&&aulas[0].topico){
+        topIn.value=aulas[0].topico;
+        await qtUpd(rowId,'topico',aulas[0].topico);
+      }
+    }catch(e){console.error(e)}
+    await qtUpd(rowId,'aula',val);
+  },400);
+}
+
 async function qtUpd(id,f,v){const l=qtLinhas.find(x=>x.id===id);if(!l)return;l[f]=v;try{await sbPatch('questoes_disc',id,{[f]:v})}catch(e){console.error(e)}}
 async function qtSaveCadernos(id){
   const l=qtLinhas.find(x=>x.id===id);if(!l)return;
